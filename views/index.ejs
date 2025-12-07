@@ -1,0 +1,187 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stylish Mobile Chat</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #cd7eb2, #bfedf0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+
+  .chat-container {
+    width: 360px;
+    height: 550px; /* Height reduced */
+    background-color: #6dd6f0;
+    border-radius: 30px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    position: relative;
+  }
+
+  /* Top header */
+  .chat-header {
+    height: 60px;
+    background-color: #2a047e;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 15px;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  .chat-header span {
+    font-size: 12px;
+    font-weight: normal;
+    color: #d2f2e1;
+    margin-top: 2px;
+  }
+
+  .messages {
+    flex: 1;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    background: #a7dff0;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+  }
+
+  .message {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 25px;
+    word-wrap: break-word;
+    font-size: 14px;
+    line-height: 1.4;
+    position: relative;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+  }
+
+  .message.sender {
+    background-color: #dcf8c6;
+    align-self: flex-end;
+  }
+
+  .message.receiver {
+    background-color: #fff;
+    align-self: flex-start;
+  }
+
+  /* Stylish Input area */
+  .input-area {
+    display: flex;
+    padding: 12px 15px;
+    background: #f7f7f7;
+    border-top: 1px solid #ccc;
+    box-shadow: 0 -3px 10px rgba(0,0,0,0.1);
+  }
+
+  .input-area input {
+    flex: 1;
+    padding: 12px 15px;
+    border-radius: 25px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+    background-color: #fff;
+    transition: 0.3s;
+  }
+
+  .input-area input:focus {
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.25);
+  }
+
+  .input-area button {
+    margin-left: 10px;
+    padding: 12px 15px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #181089, #5823b3);
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    transition: 0.3s;
+  }
+
+  .input-area button:hover {
+    background: linear-gradient(135deg, #181089, #5823b3);
+  }
+
+  /* Scrollbar styling */
+  .messages::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .messages::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 3px;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="chat-container">
+  <div class="chat-header">
+    Chat App <span>Online</span>
+  </div>
+  <div class="messages"></div>
+  <div class="input-area">
+    <input type="text" id="txt" placeholder="Type a message...">
+    <button id="send">➤</button>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  const messagesDiv = document.querySelector('.messages');
+  const input = document.querySelector('#txt');
+  const sendBtn = document.querySelector('#send');
+
+  function addMessage(msg, type) {
+    const div = document.createElement('div');
+    div.textContent = msg;
+    div.classList.add('message', type);
+    messagesDiv.appendChild(div);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  socket.on('message', msg => {
+    addMessage(msg, 'receiver');
+  });
+
+  function sendMessage() {
+    const msg = input.value.trim();
+    if(msg) {
+      addMessage(msg, 'sender');
+      socket.emit('message', msg);
+      input.value = '';
+    }
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  input.addEventListener('keypress', e => {
+    if(e.key === 'Enter') sendMessage();
+  });
+</script>
+
+</body>
+</html>
