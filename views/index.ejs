@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,7 +17,7 @@
 
   .chat-container {
     width: 360px;
-    height: 550px; /* Height reduced */
+    height: 550px;
     background-color: #6dd6f0;
     border-radius: 30px;
     display: flex;
@@ -28,7 +27,6 @@
     position: relative;
   }
 
-  /* Top header */
   .chat-header {
     height: 60px;
     background-color: #2a047e;
@@ -59,6 +57,7 @@
     background: #a7dff0;
     border-bottom-left-radius: 20px;
     border-bottom-right-radius: 20px;
+    scroll-behavior: smooth;
   }
 
   .message {
@@ -82,13 +81,13 @@
     align-self: flex-start;
   }
 
-  /* Stylish Input area */
   .input-area {
     display: flex;
     padding: 12px 15px;
     background: #f7f7f7;
     border-top: 1px solid #ccc;
     box-shadow: 0 -3px 10px rgba(0,0,0,0.1);
+    gap:6px;
   }
 
   .input-area input {
@@ -108,7 +107,6 @@
   }
 
   .input-area button {
-    margin-left: 10px;
     padding: 12px 15px;
     border-radius: 50%;
     border: none;
@@ -124,7 +122,6 @@
     background: linear-gradient(135deg, #181089, #5823b3);
   }
 
-  /* Scrollbar styling */
   .messages::-webkit-scrollbar {
     width: 6px;
   }
@@ -134,6 +131,25 @@
     border-radius: 3px;
   }
 
+  #emojiPicker {
+    position: absolute;
+    bottom: 70px;
+    left: 15px;
+    background: #fff;
+    padding: 10px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    display: none;
+    z-index: 10;
+    flex-wrap: wrap;
+    width: 200px;
+  }
+
+  #emojiPicker span {
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px;
+  }
 </style>
 </head>
 <body>
@@ -144,8 +160,14 @@
   </div>
   <div class="messages"></div>
   <div class="input-area">
+    <button id="emojiBtn">😊</button>
     <input type="text" id="txt" placeholder="Type a message...">
     <button id="send">➤</button>
+  </div>
+  <div id="emojiPicker">
+    <span>😀</span><span>😁</span><span>😂</span><span>🤣</span>
+    <span>😊</span><span>😍</span><span>😎</span><span>😢</span>
+    <span>😡</span><span>❤️</span><span>🔥</span><span>🎉</span>
   </div>
 </div>
 
@@ -164,24 +186,45 @@
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
 
+  // Receive message from server
   socket.on('message', msg => {
-    addMessage(msg, 'receiver');
+    addMessage(msg.text, msg.sender ? 'sender' : 'receiver');
   });
 
   function sendMessage() {
     const msg = input.value.trim();
-    if(msg) {
-      addMessage(msg, 'sender');
-      socket.emit('message', msg);
-      input.value = '';
-    }
+    if (!msg) return;
+    socket.emit('message', msg);
+    input.value = '';
+    input.focus();
   }
 
   sendBtn.addEventListener('click', sendMessage);
-  input.addEventListener('keypress', e => {
-    if(e.key === 'Enter') sendMessage();
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  // Emoji picker
+  const emojiBtn = document.getElementById("emojiBtn");
+  const emojiPicker = document.getElementById("emojiPicker");
+
+  emojiBtn.addEventListener("click", () => {
+    emojiPicker.style.display = emojiPicker.style.display === "block" ? "none" : "block";
+  });
+
+  emojiPicker.addEventListener("click", e => {
+    if(e.target.tagName === "SPAN"){
+      input.value += e.target.textContent;
+      input.focus();
+    }
+  });
+
+  document.addEventListener('click', e => {
+    if(!emojiPicker.contains(e.target) && e.target !== emojiBtn) {
+      emojiPicker.style.display = 'none';
+    }
   });
 </script>
-
 </body>
 </html>
+
