@@ -225,6 +225,9 @@
     }
   });
 </script>
-</body>
+</body> document.addEventListener('click', e => {
+    if(!emojiPicker.contains(e.target) && e.target !== emojiBtn) {
+      emojiPicker.style.display = 'none';
+    }
 </html>
 
